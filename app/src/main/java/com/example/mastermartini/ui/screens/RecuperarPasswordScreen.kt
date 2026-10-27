@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,14 +32,17 @@ fun RecuperarPasswordScreen(
 
     val scope = rememberCoroutineScope()
 
+    // 1. CORRECCIÓN DEL MODO OSCURO PARA LA CAJA DE TEXTO
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = Color.White,
         unfocusedContainerColor = Color.White,
         focusedBorderColor = DarkGreen,
         unfocusedBorderColor = Color.LightGray,
+        cursorColor = DarkGreen,
         focusedTextColor = Color.Black,
         unfocusedTextColor = Color.Black
     )
+    val blackTextStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
 
     Column(
         modifier = Modifier.fillMaxSize().background(BackgroundGray)
@@ -67,17 +71,28 @@ fun RecuperarPasswordScreen(
             modifier = Modifier.padding(32.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // 2. TEXTO INSTRUCTIVO FORZADO A NEGRO
             Text(
                 text = "Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.",
+                color = Color.Black,
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
+            // 3. TÍTULO DEL CAMPO FORZADO A NEGRO Y SEPARADO DE LA CAJA
+            Text(
+                text = "Correo Electrónico",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(bottom = 4.dp).align(Alignment.Start)
+            )
+
             OutlinedTextField(
                 value = correo,
                 onValueChange = { correo = it; mensaje = "" },
-                label = { Text("Correo Electrónico") },
+                textStyle = blackTextStyle,
                 colors = textFieldColors,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
@@ -87,7 +102,6 @@ fun RecuperarPasswordScreen(
             if (mensaje.isNotEmpty()) {
                 Text(
                     text = mensaje,
-                    // Si el mensaje dice "enviado", lo ponemos verde, si es error, rojo
                     color = if (mensaje.contains("enviado")) DarkGreen else Color(0xFFCE2B37),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -103,10 +117,10 @@ fun RecuperarPasswordScreen(
                     } else {
                         scope.launch {
                             isLoading = true
-                            delay(1500) // Simulamos que se está enviando el correo
+                            delay(1500) // Simulamos envío
                             isLoading = false
                             mensaje = "¡Enlace de recuperación enviado con éxito!"
-                            correo = "" // Limpiamos el campo
+                            correo = ""
                         }
                     }
                 },

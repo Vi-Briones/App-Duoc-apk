@@ -12,6 +12,7 @@ import com.example.mastermartini.ui.screens.LoginScreen
 import com.example.mastermartini.ui.screens.MenuScreen            // ← CAMBIO (antes DashboardScreen)
 import com.example.mastermartini.ui.screens.PerfilScreen
 import com.example.mastermartini.ui.screens.RegistroScreen
+import com.example.mastermartini.ui.screens.RecuperarPasswordScreen
 import com.example.mastermartini.ui.screens.ReproductorScreen     // ← CAMBIO (antes VideoScreen)
 import com.example.mastermartini.ui.screens.VideosScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,6 +22,7 @@ import com.example.mastermartini.viewmodel.AuthViewModel// ← CAMBIO (nuevo)
 object Rutas {
     const val LOGIN = "login"
     const val REGISTRO = "registro"
+    const val RECUPERAR_CLAVE = "recuperar_clave"
     const val MENU = "menu"                                        // ← CAMBIO (antes DASHBOARD)
     const val PERFIL = "perfil"
     const val VIDEOS = "videos"                                    // ← CAMBIO (nuevo)
@@ -35,7 +37,7 @@ object Rutas {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val authViewModel: AuthViewModel = viewModel()   // ← NUEVO: lo comparten Login y Registro
+    val authViewModel: AuthViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -49,21 +51,27 @@ fun AppNavigation() {
 
         composable(Rutas.LOGIN) {
             LoginScreen(
-                viewModel = authViewModel,                              // ← NUEVO
+                viewModel = authViewModel,
                 onLogin = {
                     navController.navigate(Rutas.MENU) {
                         popUpTo(Rutas.LOGIN) { inclusive = true }
                     }
                 },
                 onIrARegistro = { navController.navigate(Rutas.REGISTRO) },
-                onOlvidoPassword = { /* pendiente: ir a recuperar contraseña */ }   // ← NUEVO
+                onOlvidoPassword = { navController.navigate(Rutas.RECUPERAR_CLAVE) }
             )
         }
 
         composable(Rutas.REGISTRO) {
             RegistroScreen(
-                viewModel = authViewModel,                              // ← NUEVO
+                viewModel = authViewModel,
                 onRegistrado = { navController.popBackStack() }
+            )
+        }
+
+        composable(Rutas.RECUPERAR_CLAVE) {
+            RecuperarPasswordScreen(
+                onVolver = { navController.popBackStack() }
             )
         }
 
