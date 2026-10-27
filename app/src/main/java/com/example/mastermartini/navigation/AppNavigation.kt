@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.example.mastermartini.ui.screens.DashboardScreen
 import com.example.mastermartini.ui.screens.LoginScreen
 import com.example.mastermartini.ui.screens.PerfilScreen
+import com.example.mastermartini.ui.screens.RecuperarPasswordScreen
 import com.example.mastermartini.ui.screens.RegistroScreen
 import com.example.mastermartini.ui.screens.VideoScreen
 
@@ -16,6 +17,7 @@ import com.example.mastermartini.ui.screens.VideoScreen
 object Rutas {
     const val LOGIN = "login"
     const val REGISTRO = "registro"
+    const val RECUPERAR_CLAVE = "recuperar_clave"
     const val DASHBOARD = "dashboard"
     const val PERFIL = "perfil"
     const val VIDEO = "video/{cursoId}"          // {cursoId} es un "hueco" que se llena al navegar
@@ -23,8 +25,8 @@ object Rutas {
 }
 
 /**
- * El NavHost decide qué pantalla se muestra.
- * Las pantallas NO conocen al navController: solo reciben lambdas (onLogin, onVolver...).
+- El NavHost decide qué pantalla se muestra.
+- Las pantallas NO conocen al navController: solo reciben lambdas (onLogin, onVolver...).
  */
 @Composable
 fun AppNavigation() {
@@ -33,19 +35,37 @@ fun AppNavigation() {
     NavHost(navController = navController, startDestination = Rutas.LOGIN) {
 
         composable(Rutas.LOGIN) {
+            // Instanciamos el ViewModel para el Login
+            val authViewModel = androidx.lifecycle.viewmodel.compose.viewModel<com.example.mastermartini.viewmodel.AuthViewModel>()
+
             LoginScreen(
+                viewModel = authViewModel, // Pasamos el ViewModel a la pantalla
                 onLogin = {
                     navController.navigate(Rutas.DASHBOARD) {
                         // Borra el login del historial: "atrás" ya no vuelve al login
                         popUpTo(Rutas.LOGIN) { inclusive = true }
                     }
                 },
-                onIrARegistro = { navController.navigate(Rutas.REGISTRO) }
+                onIrARegistro = { navController.navigate(Rutas.REGISTRO) },
+                onOlvidoPassword = { navController.navigate(Rutas.RECUPERAR_CLAVE) }
+
+            )
+        }
+
+        composable(Rutas.RECUPERAR_CLAVE) {
+            RecuperarPasswordScreen(
+                onVolver = { navController.popBackStack() } // Esto hace que regrese al Login
             )
         }
 
         composable(Rutas.REGISTRO) {
-            RegistroScreen(onRegistrado = { navController.popBackStack() })
+            // Instanciamos el ViewModel para el Registro
+            val authViewModel = androidx.lifecycle.viewmodel.compose.viewModel<com.example.mastermartini.viewmodel.AuthViewModel>()
+
+            RegistroScreen(
+                viewModel = authViewModel, // Pasamos el ViewModel a la pantalla
+                onRegistrado = { navController.popBackStack() }
+            )
         }
 
         composable(Rutas.DASHBOARD) {

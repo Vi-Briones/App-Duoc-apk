@@ -17,12 +17,11 @@ import androidx.compose.ui.unit.dp
 import com.example.mastermartini.data.CursoRepository
 
 /*
- * ⚠️ PANTALLAS TEMPORALES ⚠️
- * Solo sirven para poder navegar y probar el video.
- * Las pantallas reales las hacen tus compañeros.
- * Cuando unan el proyecto: BORRA ESTE ARCHIVO y usa las de ellos
- * (deben recibir los mismos parámetros: onLogin, onIrARegistro, etc.).
- */
+- ⚠️ PANTALLAS TEMPORALES ⚠️
+- Solo sirven para poder navegar y probar el video.
+- Las pantallas reales las hacen tus compañeros.
+- Cuando unan el proyecto: BORRA ESTE ARCHIVO y usa las de ellos
+*/
 
 @Composable
 private fun PantallaBase(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
@@ -45,22 +44,6 @@ private fun BotonGrande(texto: String, onClick: () -> Unit) {
     }
 }
 
-@Composable
-fun LoginScreen(onLogin: () -> Unit, onIrARegistro: () -> Unit) {
-    PantallaBase("Login") {
-        BotonGrande("Iniciar sesión", onLogin)
-        OutlinedButton(onClick = onIrARegistro, modifier = Modifier.fillMaxWidth()) {
-            Text("Crear cuenta")
-        }
-    }
-}
-
-@Composable
-fun RegistroScreen(onRegistrado: () -> Unit) {
-    PantallaBase("Registro") {
-        BotonGrande("Registrarme", onRegistrado)
-    }
-}
 
 @Composable
 fun DashboardScreen(onCursoClick: (Int) -> Unit, onPerfil: () -> Unit) {
