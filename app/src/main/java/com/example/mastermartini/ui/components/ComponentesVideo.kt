@@ -1,14 +1,14 @@
 package com.example.mastermartini.ui.components
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,22 +18,33 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,8 +52,8 @@ import com.example.mastermartini.R
 import com.example.mastermartini.model.Video
 
 /**
- * Colores de Master Martini usados en el módulo de video.
- * Están en un "object" propio para no chocar con el Color.kt del tema de tus compañeros.
+ * Colores de Master Martini usados en la app.
+ * Están en un "object" propio para no chocar con el Color.kt del tema.
  */
 object ColoresMarca {
     val Verde = Color(0xFF004D42)
@@ -112,7 +123,7 @@ fun EncabezadoVerde(
     }
 }
 
-/** Círculo blanco con un triángulo de "play" dibujado (no necesita librerías de íconos). */
+/** Círculo blanco con el ícono de "play". */
 @Composable
 fun IconoPlay(modifier: Modifier = Modifier, tamano: Dp = 60.dp) {
     Box(
@@ -121,15 +132,74 @@ fun IconoPlay(modifier: Modifier = Modifier, tamano: Dp = 60.dp) {
             .background(Color.White.copy(alpha = 0.92f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(tamano * 0.4f)) {
-            val triangulo = Path().apply {
-                moveTo(size.width * 0.2f, 0f)
-                lineTo(size.width, size.height / 2f)
-                lineTo(size.width * 0.2f, size.height)
-                close()
-            }
-            drawPath(triangulo, ColoresMarca.TextoPrincipal)
+        Icon(
+            imageVector = Icons.Filled.PlayArrow,
+            contentDescription = null, // decorativo: la tarjeta ya dice qué video es
+            tint = ColoresMarca.TextoPrincipal,
+            modifier = Modifier.size(tamano * 0.6f)
+        )
+    }
+}
+
+/**
+ * Ícono de marcador (Material Icons).
+ * Relleno = guardado. Solo el borde = no guardado.
+ */
+@Composable
+fun IconoMarcador(
+    guardado: Boolean,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        imageVector = if (guardado) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+        contentDescription = null, // la descripción la pone el botón que lo contiene
+        tint = color,
+        modifier = modifier.size(26.dp)
+    )
+}
+
+/** Botón pequeño con el marcador (para tarjetas). Área táctil de 48dp. */
+@Composable
+fun BotonGuardar(
+    guardado: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = ColoresMarca.Verde
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.semantics {
+            contentDescription = if (guardado) "Quitar de guardados" else "Guardar video"
         }
+    ) {
+        IconoMarcador(guardado = guardado, color = color)
+    }
+}
+
+/** Botón grande con texto (para el reproductor): más claro para usuarios mayores. */
+@Composable
+fun BotonGuardarGrande(guardado: Boolean, onClick: () -> Unit) {
+    val colorContenido = if (guardado) Color.White else ColoresMarca.Verde
+    OutlinedButton(
+        onClick = onClick,
+        border = BorderStroke(2.dp, ColoresMarca.Verde),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (guardado) ColoresMarca.Verde else Color.Transparent,
+            contentColor = colorContenido
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+    ) {
+        IconoMarcador(guardado = guardado, color = colorContenido)
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = if (guardado) "Guardado en mi perfil" else "Guardar video",
+            fontFamily = Poppins,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp
+        )
     }
 }
 
@@ -164,7 +234,11 @@ fun FilaCategorias(categorias: List<String>) {
 
 /** Miniatura 16:9 con degradado verde (o foto), botón de play y la duración en una esquina. */
 @Composable
-fun MiniaturaVideo(video: Video, modifier: Modifier = Modifier) {
+fun MiniaturaVideo(
+    video: Video,
+    modifier: Modifier = Modifier,
+    tamanoPlay: Dp = 60.dp
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -189,14 +263,14 @@ fun MiniaturaVideo(video: Video, modifier: Modifier = Modifier) {
                 color = ColoresMarca.Dorado,
                 fontFamily = Poppins,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(12.dp)
+                    .padding(10.dp)
             )
         }
 
-        IconoPlay()
+        IconoPlay(tamano = tamanoPlay)
 
         // Duración estilo YouTube (abajo a la derecha)
         Text(
@@ -204,23 +278,27 @@ fun MiniaturaVideo(video: Video, modifier: Modifier = Modifier) {
             color = Color.White,
             fontFamily = Poppins,
             fontWeight = FontWeight.Medium,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(10.dp)
+                .padding(8.dp)
                 .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(6.dp))
                 .padding(horizontal = 8.dp, vertical = 3.dp)
         )
     }
 }
 
-/** Tarjeta blanca con sombra: miniatura arriba, título y categorías abajo. */
+/** Tarjeta de la lista: miniatura arriba; título, botón guardar y categorías abajo. */
 @Composable
-fun TarjetaVideo(video: Video, onClick: () -> Unit) {
-    val forma = RoundedCornerShape(18.dp)
+fun TarjetaVideo(
+    video: Video,
+    guardado: Boolean,
+    onAlternarGuardado: () -> Unit,
+    onClick: () -> Unit
+) {
     Card(
         onClick = onClick,
-        shape = forma,
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         border = BorderStroke(1.dp, ColoresMarca.Borde),
@@ -228,23 +306,70 @@ fun TarjetaVideo(video: Video, onClick: () -> Unit) {
     ) {
         MiniaturaVideo(video)
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = video.titulo,
-                color = ColoresMarca.TextoPrincipal,
-                fontFamily = Poppins,
-                fontWeight = FontWeight.Bold,
-                fontSize = 19.sp,
-                lineHeight = 24.sp
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = video.titulo,
+                    color = ColoresMarca.TextoPrincipal,
+                    fontFamily = Poppins,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 19.sp,
+                    lineHeight = 24.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                BotonGuardar(guardado = guardado, onClick = onAlternarGuardado)
+            }
             FilaCategorias(video.categorias)
         }
     }
 }
 
-/** Para usar en textos que no son títulos pero quieres destacar (ej: "Duración"). */
+/**
+ * Tarjeta pequeña para "Mis videos guardados" del perfil.
+ * Tocarla abre el video; el marcador lo quita de guardados.
+ */
+@Composable
+fun TarjetaGuardada(
+    video: Video,
+    onClick: () -> Unit,
+    onQuitar: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, ColoresMarca.Borde),
+        modifier = Modifier.width(200.dp)
+    ) {
+        Box {
+            MiniaturaVideo(video = video, tamanoPlay = 40.dp)
+            // Marcador sobre la miniatura, con fondo blanco para que se vea
+            BotonGuardar(
+                guardado = true,
+                onClick = onQuitar,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(6.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.9f))
+            )
+        }
+        Text(
+            text = video.titulo,
+            color = ColoresMarca.TextoPrincipal,
+            fontFamily = Poppins,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(10.dp)
+        )
+    }
+}
+
+/** Texto gris para datos secundarios (ej: "Duración"). */
 @Composable
 fun TextoSecundario(texto: String) {
     Text(

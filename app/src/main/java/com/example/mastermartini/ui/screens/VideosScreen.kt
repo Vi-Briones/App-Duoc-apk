@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,16 +30,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mastermartini.ui.components.ColoresMarca
-import com.example.mastermartini.ui.components.ColoresMarca.Fondo
 import com.example.mastermartini.ui.components.EncabezadoVerde
 import com.example.mastermartini.ui.components.TarjetaVideo
 import com.example.mastermartini.viewmodel.VideosViewModel
 
 /**
- * VIEW: lista "VIDEOS TÉCNICOS" con buscador.
+ * VIEW: lista de videos con buscador y botón "guardar" en cada tarjeta.
  *
  * Contrato con la navegación:
- *  - onVideoClick(id): qué hacer al tocar un video (el NavHost abre el reproductor)
+ *  - onVideoClick(id): abrir el reproductor
+ *  - onVolverMenu: volver al menú principal
  */
 @Composable
 fun VideosScreen(
@@ -44,26 +50,39 @@ fun VideosScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Fondo)
+            .background(ColoresMarca.Fondo)
     ) {
         EncabezadoVerde(titulo = "VIDEO RECETAS") {
             TextButton(
                 onClick = onVolverMenu,
                 modifier = Modifier.align(Alignment.Start)
             ) {
-                Text("<- Volver al menú", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Volver al menú",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
             TextField(
                 value = viewModel.busqueda,
                 onValueChange = { viewModel.cambiarBusqueda(it) },
                 placeholder = { Text("Buscar por nombre o categoría") },
+                leadingIcon = {
+                    Icon(Icons.Filled.Search, contentDescription = null, tint = ColoresMarca.TextoSecundario)
+                },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Black,
-                    unfocusedContainerColor = Color.Black,
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Black
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -87,10 +106,15 @@ fun VideosScreen(
         } else {
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 items(videos, key = { it.id }) { video ->
-                    TarjetaVideo(video = video, onClick = { onVideoClick(video.id) })
+                    TarjetaVideo(
+                        video = video,
+                        guardado = viewModel.estaGuardado(video.id),
+                        onAlternarGuardado = { viewModel.alternarGuardado(video.id) },
+                        onClick = { onVideoClick(video.id) }
+                    )
                 }
             }
         }

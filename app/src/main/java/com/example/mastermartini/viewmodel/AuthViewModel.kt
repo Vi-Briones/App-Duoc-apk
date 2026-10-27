@@ -39,3 +39,4 @@ class AuthViewModel : ViewModel() {
         _registerSuccess.value = null
     }
 }
+

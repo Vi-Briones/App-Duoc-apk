@@ -1,5 +1,6 @@
 package com.example.mastermartini.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,10 +37,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.ui.PlayerView
 import com.example.mastermartini.model.FuenteVideo
+import com.example.mastermartini.ui.components.BotonGuardarGrande
 import com.example.mastermartini.ui.components.ColoresMarca
-import com.example.mastermartini.ui.components.ColoresMarca.Fondo
 import com.example.mastermartini.ui.components.EncabezadoVerde
 import com.example.mastermartini.ui.components.FilaCategorias
+import com.example.mastermartini.ui.components.TextoSecundario
 import com.example.mastermartini.viewmodel.ReproductorViewModel
 
 /**
@@ -66,6 +72,15 @@ fun ReproductorScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    // 3) Al salir: escondemos el video ANTES de navegar (si no, queda "flotando")
+    var saliendo by remember { mutableStateOf(false) }
+    val salir: () -> Unit = {
+        saliendo = true
+        viewModel.pausar()
+        onVolver()
+    }
+    BackHandler(onBack = salir) // el botón "atrás" del teléfono también usa salir()
+
     val video = viewModel.video
     val fuente = video?.fuente
     val mensajeError = viewModel.error
@@ -74,7 +89,7 @@ fun ReproductorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Fondo)
+            .background(ColoresMarca.Fondo)
             .verticalScroll(rememberScrollState())
     ) {
         EncabezadoVerde(titulo = video?.titulo ?: "Cargando video…")
@@ -83,7 +98,7 @@ fun ReproductorScreen(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 3) Zona del video (16:9, fondo negro)
+            // 4) Zona del video (16:9, fondo negro)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -124,40 +139,46 @@ fun ReproductorScreen(
 
                     // c) Video local o streaming: lo reproduce ExoPlayer
                     else -> {
-                        // PlayerView es una vista "antigua" (no Compose); AndroidView es el puente
-                        AndroidView(
-                            factory = { context ->
-                                PlayerView(context).apply {
-                                    player = viewModel.player
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                            onRelease = { playerView -> playerView.player = null }
-                        )
-                        if (viewModel.cargando) {
-                            CircularProgressIndicator(color = Color.White)
+                        if (!saliendo) {
+                            // PlayerView es una vista "antigua" (no Compose); AndroidView es el puente
+                            AndroidView(
+                                factory = { context ->
+                                    PlayerView(context).apply {
+                                        player = viewModel.player
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                                onRelease = { playerView -> playerView.player = null }
+                            )
+                            if (viewModel.cargando) {
+                                CircularProgressIndicator(color = Color.White)
+                            }
                         }
                     }
                 }
             }
 
-            // 4) Información del video
+            // 5) Guardar / quitar de "Mis videos guardados"
+            if (video != null) {
+                BotonGuardarGrande(
+                    guardado = viewModel.guardado,
+                    onClick = { viewModel.alternarGuardado() }
+                )
+            }
+
+            // 6) Información del video
             if (video != null) {
                 FilaCategorias(video.categorias)
-                Text(
-                    text = "Duración: ${video.duracion}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = ColoresMarca.TextoSecundario
-                )
+                TextoSecundario("Duración: ${video.duracion}")
                 Text(
                     text = video.descripcion,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
 
-            // 5) Botón grande y con buen contraste (usuarios mayores, como pide el caso)
+            // 7) Botón grande y con buen contraste (usuarios mayores, como pide el caso)
             Button(
-                onClick = onVolver,
+                onClick = salir,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ColoresMarca.Verde,
                     contentColor = Color.White
@@ -166,7 +187,7 @@ fun ReproductorScreen(
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Text("Volver a los videos", style = MaterialTheme.typography.titleMedium)
+                Text("Volver", style = MaterialTheme.typography.titleMedium)
             }
         }
     }

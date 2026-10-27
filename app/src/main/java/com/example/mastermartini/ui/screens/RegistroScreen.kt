@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mastermartini.viewmodel.AuthViewModel
+import android.util.Patterns
 
 // Paleta de colores corporativa
 private val DarkGreen = Color(0xFF003831)
@@ -252,7 +253,7 @@ fun RegistroScreen(
                     when {
                         nombre.isBlank() -> errorMessage = "El nombre completo es obligatorio."
                         correo.isBlank() -> errorMessage = "El correo electrónico es obligatorio."
-                        !correo.trim().lowercase().endsWith("@mastermartini.cl") -> errorMessage = "El correo debe terminar en @mastermartini.cl"
+                        !Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches() -> errorMessage = "Ingresa un correo válido (ej: nombre@gmail.com)"
                         telefono.isBlank() -> errorMessage = "El teléfono es obligatorio."
                         tipoNegocio.isBlank() -> errorMessage = "Selecciona un tipo de negocio."
                         password.isBlank() -> errorMessage = "La contraseña es obligatoria."

@@ -2,6 +2,7 @@ package com.example.mastermartini.viewmodel
 
 import android.app.Application
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,13 +10,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.mastermartini.data.GuardadosRepository
 import com.example.mastermartini.data.VideoRepository
 import com.example.mastermartini.model.FuenteVideo
 import com.example.mastermartini.model.Video
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultRenderersFactory
 
 /**
  * VIEWMODEL del reproductor.
@@ -30,6 +31,8 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 @OptIn(UnstableApi::class)
 class ReproductorViewModel(application: Application) : AndroidViewModel(application) {
 
+    // setEnableDecoderFallback: si el decodificador principal falla (pasa en algunos
+    // emuladores), ExoPlayer prueba con otro en vez de mostrar error.
     val player: ExoPlayer = ExoPlayer.Builder(
         application,
         DefaultRenderersFactory(application).setEnableDecoderFallback(true)
@@ -49,6 +52,10 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
     val puedeReintentar: Boolean
         get() = video != null && video?.fuente !is FuenteVideo.YouTube
 
+    /** ¿El video actual está en "Mis videos guardados"? */
+    val guardado: Boolean
+        get() = video?.let { GuardadosRepository.estaGuardado(it.id) } ?: false
+
     // Escucha lo que pasa en el reproductor para actualizar el estado
     private val listener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -57,7 +64,11 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
 
         override fun onPlayerError(error: PlaybackException) {
             this@ReproductorViewModel.error =
-                "No se pudo reproducir el video. (${error.errorCodeName})"   // ← temporal
+                if (video?.fuente is FuenteVideo.Streaming) {
+                    "No se pudo cargar el video. Revisa tu conexión a internet."
+                } else {
+                    "No se pudo reproducir el video."
+                }
             cargando = false
         }
     }
@@ -108,6 +119,10 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
         cargando = true
         player.prepare()
         player.playWhenReady = true
+    }
+
+    fun alternarGuardado() {
+        video?.let { GuardadosRepository.alternar(it.id) }
     }
 
     fun pausar() {

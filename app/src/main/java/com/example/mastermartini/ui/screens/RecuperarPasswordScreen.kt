@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.util.Patterns
 
 // Paleta de colores corporativa
 private val DarkGreen = Color(0xFF003831)
@@ -112,8 +113,8 @@ fun RecuperarPasswordScreen(
 
             Button(
                 onClick = {
-                    if (correo.isBlank() || !correo.trim().lowercase().endsWith("@mastermartini.cl")) {
-                        mensaje = "Ingresa un correo válido de @mastermartini.cl"
+                    if (correo.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()) {
+                        mensaje = "Ingresa un correo válido (ej: nombre@gmail.com)"
                     } else {
                         scope.launch {
                             isLoading = true
