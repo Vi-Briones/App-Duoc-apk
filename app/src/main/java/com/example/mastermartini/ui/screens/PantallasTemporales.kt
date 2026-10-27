@@ -14,14 +14,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.mastermartini.data.CursoRepository
 
 /*
- * ⚠️ PANTALLAS TEMPORALES ⚠️
- * Solo sirven para poder navegar y probar el video.
- * Las pantallas reales las hacen tus compañeros.
- * Cuando unan el proyecto: BORRA ESTE ARCHIVO y usa las de ellos
- * (deben recibir los mismos parámetros: onLogin, onIrARegistro, etc.).
- */
+- ⚠️ PANTALLAS TEMPORALES ⚠️
+- Solo sirven para poder navegar y probar el video.
+- Las pantallas reales las hacen tus compañeros.
+- Cuando unan el proyecto: BORRA ESTE ARCHIVO y usa las de ellos
+*/
 
 @Composable
 private fun PantallaBase(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
@@ -44,11 +44,14 @@ private fun BotonGrande(texto: String, onClick: () -> Unit) {
     }
 }
 
+
 @Composable
-fun MenuScreen(onVideos: () -> Unit, onPerfil: () -> Unit) {
-    PantallaBase("Menú principal") {
-        // En la pantalla real: el botón "VIDEOS TÉCNICOS" y la pestaña "Videos" llaman a onVideos()
-        BotonGrande("Videos técnicos", onVideos)
+fun DashboardScreen(onCursoClick: (Int) -> Unit, onPerfil: () -> Unit) {
+    PantallaBase("Cursos") {
+        // Un botón por curso, solo para probar que cada uno abre SU video
+        CursoRepository.obtenerCursos().forEach { curso ->
+            BotonGrande(curso.titulo) { onCursoClick(curso.id) }
+        }
         OutlinedButton(onClick = onPerfil, modifier = Modifier.fillMaxWidth()) {
             Text("Mi perfil")
         }
