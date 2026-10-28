@@ -1,6 +1,7 @@
 package com.example.mastermartini.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,11 +63,14 @@ fun ReproductorScreen(
         viewModel.cargarVideo(videoId)
     }
 
-    // 2) Si la app pasa a segundo plano (botón Home, llamada...), pausamos el video
+    // 2) Si la app pasa a segundo plano (botón Home, llamada...), pausamos el video.
+    //    Al girar el celular también llega ON_STOP: ahí NO pausamos.
     val lifecycleOwner = LocalLifecycleOwner.current
+    val activity = LocalActivity.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE) viewModel.pausar()
+            val girando = activity?.isChangingConfigurations == true
+            if (event == Lifecycle.Event.ON_STOP && !girando) viewModel.pausar()
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -74,7 +78,8 @@ fun ReproductorScreen(
 
     // 3) Al salir: escondemos el video ANTES de navegar (si no, queda "flotando")
     var saliendo by remember { mutableStateOf(false) }
-    val salir: () -> Unit = {
+    val salir: () -> Unit = salir@{
+        if (saliendo) return@salir // doble toque en "Volver": solo sale una vez
         saliendo = true
         viewModel.pausar()
         onVolver()

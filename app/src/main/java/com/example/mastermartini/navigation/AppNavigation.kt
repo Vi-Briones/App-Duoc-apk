@@ -59,8 +59,8 @@ fun AppNavigation() {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
-                onIrARegistro = { navController.navigate(Rutas.REGISTRO) },
-                onOlvidoPassword = { navController.navigate(Rutas.RECUPERAR_CLAVE) }
+                onIrARegistro = { navController.navigate(Rutas.REGISTRO) { launchSingleTop = true } },
+                onOlvidoPassword = { navController.navigate(Rutas.RECUPERAR_CLAVE) { launchSingleTop = true } }
             )
         }
 
@@ -80,20 +80,22 @@ fun AppNavigation() {
 
         composable(Rutas.RECUPERAR_CLAVE) {
             RecuperarPasswordScreen(
-                onVolver = { navController.popBackStack() }
+                // Vuelve justo al login (un doble toque no deja la pantalla en blanco)
+                onVolver = { navController.popBackStack(Rutas.LOGIN, inclusive = false) }
             )
         }
 
+        // launchSingleTop: un doble toque no abre la misma pantalla dos veces
         composable(Rutas.MENU) {
             MenuScreen(
-                onVideos = { navController.navigate(Rutas.VIDEOS) },
-                onPerfil = { navController.navigate(Rutas.PERFIL) }
+                onVideos = { navController.navigate(Rutas.VIDEOS) { launchSingleTop = true } },
+                onPerfil = { navController.navigate(Rutas.PERFIL) { launchSingleTop = true } }
             )
         }
 
         composable(Rutas.VIDEOS) {
             VideosScreen(
-                onVideoClick = { id -> navController.navigate(Rutas.reproductor(id)) },
+                onVideoClick = { id -> navController.navigate(Rutas.reproductor(id)) { launchSingleTop = true } },
                 onVolverMenu = { navController.popBackStack(Rutas.MENU, inclusive = false) }
             )
         }
@@ -111,13 +113,13 @@ fun AppNavigation() {
 
         composable(Rutas.PERFIL) {
             PerfilScreen(
-                onVideoClick = { id -> navController.navigate(Rutas.reproductor(id)) },
-                onIrAVideos = { navController.navigate(Rutas.VIDEOS) },
+                onVideoClick = { id -> navController.navigate(Rutas.reproductor(id)) { launchSingleTop = true } },
+                onIrAVideos = { navController.navigate(Rutas.VIDEOS) { launchSingleTop = true } },
                 onVolverMenu = { navController.popBackStack(Rutas.MENU, inclusive = false) },
                 // ← CAMBIO v6: ya no hay onCerrarSesion (el perfil cierra la sesión solo
                 // y se queda en modo "sin sesión"); ahora tiene estas dos acciones:
-                onIniciarSesion = { navController.navigate(Rutas.LOGIN) },
-                onRegistrarse = { navController.navigate(Rutas.REGISTRO) }
+                onIniciarSesion = { navController.navigate(Rutas.LOGIN) { launchSingleTop = true } },
+                onRegistrarse = { navController.navigate(Rutas.REGISTRO) { launchSingleTop = true } }
             )
         }
     }
