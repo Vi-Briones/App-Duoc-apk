@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import android.util.Patterns
 
 // Paleta de colores corporativa
 private val DarkGreen = Color(0xFF003831)
@@ -27,13 +27,13 @@ private val BackgroundGray = Color(0xFFF5F7F6)
 fun RecuperarPasswordScreen(
     onVolver: () -> Unit
 ) {
-    var correo by remember { mutableStateOf("") }
-    var mensaje by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    // AHORA USAN REMEMBERSAVEABLE
+    var correo by rememberSaveable { mutableStateOf("") }
+    var mensaje by rememberSaveable { mutableStateOf("") }
+    var isLoading by rememberSaveable { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
-    // 1. CORRECCIÓN DEL MODO OSCURO PARA LA CAJA DE TEXTO
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = Color.White,
         unfocusedContainerColor = Color.White,
@@ -43,6 +43,7 @@ fun RecuperarPasswordScreen(
         focusedTextColor = Color.Black,
         unfocusedTextColor = Color.Black
     )
+
     val blackTextStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
 
     Column(
@@ -72,7 +73,6 @@ fun RecuperarPasswordScreen(
             modifier = Modifier.padding(32.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 2. TEXTO INSTRUCTIVO FORZADO A NEGRO
             Text(
                 text = "Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.",
                 color = Color.Black,
@@ -81,7 +81,6 @@ fun RecuperarPasswordScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // 3. TÍTULO DEL CAMPO FORZADO A NEGRO Y SEPARADO DE LA CAJA
             Text(
                 text = "Correo Electrónico",
                 color = Color.Black,
@@ -113,12 +112,12 @@ fun RecuperarPasswordScreen(
 
             Button(
                 onClick = {
-                    if (correo.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()) {
-                        mensaje = "Ingresa un correo válido (ej: nombre@gmail.com)"
+                    if (correo.isBlank() || !correo.trim().lowercase().endsWith("@mastermartini.cl")) {
+                        mensaje = "Ingresa un correo válido de @mastermartini.cl"
                     } else {
                         scope.launch {
                             isLoading = true
-                            delay(1500) // Simulamos envío
+                            delay(1500)
                             isLoading = false
                             mensaje = "¡Enlace de recuperación enviado con éxito!"
                             correo = ""

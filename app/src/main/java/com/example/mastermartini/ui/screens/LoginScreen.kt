@@ -3,24 +3,26 @@ package com.example.mastermartini.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.mastermartini.viewmodel.AuthViewModel
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.mastermartini.viewmodel.AuthViewModel
 
 // Paleta de colores corporativa
 private val DarkGreen = Color(0xFF003831)
@@ -29,9 +31,9 @@ private val Gold = Color(0xFFD4A336)
 @Composable
 fun GuiñoItaliano(modifier: Modifier = Modifier) {
     Row(modifier = modifier.width(80.dp).height(4.dp)) {
-        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFF009246))) // Verde
-        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color.White))       // Blanco
-        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFFCE2B37))) // Rojo
+        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFF009246)))
+        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color.White))
+        Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFFCE2B37)))
     }
 }
 
@@ -42,9 +44,9 @@ fun LoginScreen(
     onIrARegistro: () -> Unit,
     onOlvidoPassword: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val loginSuccess by viewModel.loginSuccess.collectAsState()
@@ -55,24 +57,31 @@ fun LoginScreen(
         }
     }
 
-    // Estilo de los campos de texto
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = Color.White,
         unfocusedContainerColor = Color.White,
         focusedBorderColor = Gold,
         unfocusedBorderColor = Color.Transparent,
         focusedTextColor = Color.Black,
-        unfocusedTextColor = Color.Black
+        unfocusedTextColor = Color.Black,
+        cursorColor = DarkGreen
     )
+
+    val blackTextStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkGreen)
+            .imePadding() // <--- SOLUCIÓN: Ajusta el espacio al abrir el teclado
+            .verticalScroll(rememberScrollState())
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
+        Spacer(modifier = Modifier.height(32.dp))
+
         Text(
             text = "MASTER",
             color = Gold,
@@ -94,7 +103,23 @@ fun LoginScreen(
             value = email,
             onValueChange = { email = it },
             placeholder = { Text("Correo electrónico", color = Color.Gray) },
-            leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null, tint = Color.Gray) },
+            textStyle = blackTextStyle,
+            leadingIcon = {
+                val envelopeIcon = ImageVector.Builder(
+                    name = "Email", defaultWidth = 24.dp, defaultHeight = 24.dp,
+                    viewportWidth = 24f, viewportHeight = 24f
+                ).path(fill = SolidColor(Color.Gray)) {
+                    moveTo(20f, 4f); lineTo(4f, 4f); curveToRelative(-1.1f, 0f, -1.99f, 0.9f, -1.99f, 2f)
+                    lineTo(2f, 18f); curveToRelative(0f, 1.1f, 0.9f, 2f, 2f, 2f)
+                    lineTo(20f, 20f); curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                    lineTo(22f, 6f); curveToRelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                    close()
+                    moveTo(20f, 8f); lineToRelative(-8f, 5f); lineToRelative(-8f, -5f)
+                    lineTo(4f, 6f); lineToRelative(8f, 5f); lineToRelative(8f, -5f); lineToRelative(0f, 2f)
+                    close()
+                }.build()
+                Icon(imageVector = envelopeIcon, contentDescription = "Correo", tint = Color.Gray)
+            },
             colors = textFieldColors,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
@@ -104,12 +129,10 @@ fun LoginScreen(
             value = password,
             onValueChange = { password = it },
             placeholder = { Text("Contraseña", color = Color.Gray) },
-
-            visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
-
+            textStyle = blackTextStyle,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val icon = if (passwordVisible) {
-                    // Vector del Ojo Abierto
                     ImageVector.Builder(
                         name = "Visibility", defaultWidth = 24.dp, defaultHeight = 24.dp,
                         viewportWidth = 24f, viewportHeight = 24f
@@ -131,7 +154,6 @@ fun LoginScreen(
                         close()
                     }.build()
                 } else {
-                    // Vector del Ojo Tachado (Cerrado)
                     ImageVector.Builder(
                         name = "VisibilityOff", defaultWidth = 24.dp, defaultHeight = 24.dp,
                         viewportWidth = 24f, viewportHeight = 24f
@@ -166,9 +188,8 @@ fun LoginScreen(
 
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
-
-                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
                         imageVector = icon,
+                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
                         tint = Color.Gray
                     )
                 }
@@ -213,7 +234,11 @@ fun LoginScreen(
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { onIrARegistro() }
+            modifier = Modifier
+                .clickable { onIrARegistro() }
+                .padding(8.dp)
         )
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
