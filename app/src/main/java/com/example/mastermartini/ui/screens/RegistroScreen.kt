@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mastermartini.ui.components.CampoFormulario
 import com.example.mastermartini.ui.components.MensajeFormulario
+import com.example.mastermartini.ui.components.MensajeFormularioAnimado
 import com.example.mastermartini.ui.components.SelectorFormulario
 import com.example.mastermartini.validacion.ValidadorFormularios
 import com.example.mastermartini.viewmodel.AuthViewModel
@@ -39,7 +40,7 @@ fun RegistroScreen(
     viewModel: AuthViewModel,
     onRegistrado: () -> Unit
 ) {
-    // El estado y las validaciones viven en el ViewModel; aquí solo se muestran
+    // El formulario y las validaciones están en el ViewModel
     val form = viewModel.registro
     val isLoading by viewModel.isLoading.collectAsState()
     val registerSuccess by viewModel.registerSuccess.collectAsState()
@@ -149,9 +150,9 @@ fun RegistroScreen(
                 onAccionTeclado = enviar
             )
 
-            // Error que no es de un campo (ej: falló el registro)
+            // Error general (por ejemplo, si falla el registro)
             form.errorGeneral?.let {
-                MensajeFormulario(texto = it, esError = true)
+                MensajeFormularioAnimado(texto = it, esError = true)
             }
 
             Button(

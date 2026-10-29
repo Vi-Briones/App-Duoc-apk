@@ -19,26 +19,20 @@ import com.example.mastermartini.model.FuenteVideo
 import com.example.mastermartini.model.Video
 
 /**
- * VIEWMODEL del reproductor.
- *
- * ¿Por qué el reproductor (ExoPlayer) vive aquí y no en la pantalla?
- *  - El ViewModel sobrevive cuando giras el celular: el video NO se reinicia.
- *  - Al salir de la pantalla, Android destruye el ViewModel y llama a onCleared(),
- *    donde liberamos el reproductor (si no, seguiría sonando y gastando memoria).
- *
- * Es AndroidViewModel porque ExoPlayer necesita un Context (el Application) para crearse.
+ * ViewModel del reproductor.
+ * El ExoPlayer vive aquí para que el video no se reinicie al girar la pantalla,
+ * y se libera en onCleared() al salir.
  */
 @OptIn(UnstableApi::class)
 class ReproductorViewModel(application: Application) : AndroidViewModel(application) {
 
-    // setEnableDecoderFallback: si el decodificador principal falla (pasa en algunos
-    // emuladores), ExoPlayer prueba con otro en vez de mostrar error.
+    // setEnableDecoderFallback: si un decodificador falla (pasa en emuladores), prueba otro
     val player: ExoPlayer = ExoPlayer.Builder(
         application,
         DefaultRenderersFactory(application).setEnableDecoderFallback(true)
     ).build()
 
-    // ----- ESTADO que lee la pantalla (private set: solo el ViewModel lo cambia) -----
+    // ----- Estado que lee la pantalla -----
     var video by mutableStateOf<Video?>(null)
         private set
 
@@ -48,7 +42,7 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
     var error by mutableStateOf<String?>(null)
         private set
 
-    /** Solo tiene sentido reintentar videos que reproduce ExoPlayer (no YouTube). */
+    /** Solo se puede reintentar si no es de YouTube. */
     val puedeReintentar: Boolean
         get() = video != null && video?.fuente !is FuenteVideo.YouTube
 
@@ -79,7 +73,7 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
 
     /** Busca el video por id y lo prepara según su fuente. */
     fun cargarVideo(videoId: Int) {
-        // Si ya está cargado (por ejemplo, después de girar el celular), no hacemos nada
+        // Si ya estaba cargado (por ejemplo al girar), no hace nada
         if (video?.id == videoId) return
 
         val encontrado = VideoRepository.obtenerVideoPorId(videoId)
@@ -92,7 +86,7 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
         }
         error = null
 
-        // Según de dónde venga el video, armamos su dirección (URI)
+        // Arma la URI según de dónde viene el video
         when (val fuente = encontrado.fuente) {
             is FuenteVideo.Local -> {
                 val paquete = getApplication<Application>().packageName
@@ -100,7 +94,7 @@ class ReproductorViewModel(application: Application) : AndroidViewModel(applicat
             }
             is FuenteVideo.Streaming -> reproducir(Uri.parse(fuente.url))
             is FuenteVideo.YouTube -> {
-                // ExoPlayer no reproduce YouTube: la pantalla mostrará un botón para abrirlo
+                // ExoPlayer no reproduce YouTube, la pantalla muestra un botón
                 player.stop()
                 cargando = false
             }

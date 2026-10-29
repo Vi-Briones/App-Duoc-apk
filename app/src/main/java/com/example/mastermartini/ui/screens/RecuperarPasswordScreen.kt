@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mastermartini.ui.components.CampoFormulario
 import com.example.mastermartini.ui.components.MensajeFormulario
+import com.example.mastermartini.ui.components.MensajeFormularioAnimado
 import com.example.mastermartini.viewmodel.AuthViewModel
 
 // Paleta de colores corporativa
@@ -33,7 +34,7 @@ fun RecuperarPasswordScreen(
     viewModel: AuthViewModel,
     onVolver: () -> Unit
 ) {
-    // El envío corre en el ViewModel: si se gira el celular mientras envía, no queda trabado
+    // El envío está en el ViewModel, así no se traba al girar
     val form = viewModel.recuperar
     val isLoading by viewModel.isLoading.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -96,7 +97,7 @@ fun RecuperarPasswordScreen(
             )
 
             if (form.enviado) {
-                MensajeFormulario(texto = "¡Enlace de recuperación enviado!", esError = false)
+                MensajeFormularioAnimado(texto = "¡Enlace de recuperación enviado!", esError = false)
             }
 
             Button(

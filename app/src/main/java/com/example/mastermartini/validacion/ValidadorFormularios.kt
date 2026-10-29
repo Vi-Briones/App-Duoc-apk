@@ -1,11 +1,8 @@
 package com.example.mastermartini.validacion
 
 /**
- * REGLAS DE VALIDACIÓN de los formularios (login, registro y recuperar clave).
- *
- * Están separadas de las pantallas: cada función recibe el texto y devuelve
- * el mensaje de error, o null si el dato está bien.
- * Así la misma regla sirve en varias pantallas y la pantalla no decide qué es válido.
+ * Reglas de validación de los formularios.
+ * Cada función devuelve el mensaje de error, o null si está bien.
  */
 object ValidadorFormularios {
 
@@ -48,7 +45,7 @@ object ValidadorFormularios {
     fun validarTipoNegocio(tipoNegocio: String): String? =
         if (tipoNegocio.isBlank()) "Selecciona el tipo de negocio." else null
 
-    /** En el login solo se revisa que no esté vacía (la clave la comprueba el repositorio). */
+    /** En el login solo se revisa que no esté vacía. */
     fun validarPasswordLogin(password: String): String? =
         if (password.isEmpty()) "Ingresa tu contraseña." else null
 

@@ -1,9 +1,8 @@
 package com.example.mastermartini.viewmodel
 
 /**
- * ESTADO de cada formulario: lo que escribió el usuario y el error de cada campo.
- * error == null significa que el campo está bien (o que aún no se ha validado).
- * errorGeneral es para lo que no es de un campo (ej: "Correo o contraseña incorrectos").
+ * Estado de cada formulario: lo que escribió el usuario y sus errores.
+ * Si un error es null, el campo está bien.
  */
 data class LoginFormState(
     val correo: String = "",

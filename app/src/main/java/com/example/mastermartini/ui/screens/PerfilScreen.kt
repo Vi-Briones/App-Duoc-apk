@@ -53,19 +53,8 @@ import com.example.mastermartini.ui.components.Poppins
 import com.example.mastermartini.ui.components.TarjetaGuardada
 import com.example.mastermartini.viewmodel.PerfilViewModel
 
-/**
- * VIEW: Perfil de usuario.
- *
- * Con sesión: nombre, correo, teléfono, videos guardados y "Cerrar sesión".
- * Sin sesión: invita a "Iniciar sesión" o "Crear cuenta".
- *
- * Contrato con la navegación:
- *  - onVideoClick(id): abrir un video guardado
- *  - onIrAVideos: ir a la lista de videos
- *  - onVolverMenu: volver al menú principal
- *  - onIniciarSesion: ir a la pantalla de login
- *  - onRegistrarse: ir a la pantalla de registro
- */
+
+/** Perfil del usuario. Sin sesión muestra los botones para entrar o registrarse. */
 @Composable
 fun PerfilScreen(
     onVideoClick: (Int) -> Unit,
@@ -83,7 +72,7 @@ fun PerfilScreen(
             .background(ColoresMarca.Fondo)
             .verticalScroll(rememberScrollState())
     ) {
-        // 1) Encabezado con el avatar
+        // Encabezado con el avatar
         EncabezadoVerde(titulo = "MI PERFIL") {
             Avatar(iniciales = viewModel.iniciales)
         }
@@ -110,7 +99,7 @@ fun PerfilScreen(
             // Siempre visible
             BotonPrincipal(texto = "Volver al menú", onClick = onVolverMenu)
 
-            // Solo con sesión: cerrar sesión (se queda en el perfil, que pasa a "sin sesión")
+            // Cerrar sesión (solo si hay sesión)
             if (usuario != null) {
                 TextButton(
                     onClick = { viewModel.cerrarSesion() },
@@ -258,7 +247,7 @@ private fun ContenidoSinSesion(
     }
 }
 
-// ---------- Piezas reutilizables de esta pantalla ----------
+// Componentes de esta pantalla
 
 @Composable
 private fun TarjetaBlanca(
@@ -269,7 +258,7 @@ private fun TarjetaBlanca(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White,
-            contentColor = ColoresMarca.TextoPrincipal   // evita textos "fantasma" con el tema
+            contentColor = ColoresMarca.TextoPrincipal   // texto oscuro siempre
         ),
         border = BorderStroke(1.dp, ColoresMarca.Borde),
         modifier = Modifier.fillMaxWidth()

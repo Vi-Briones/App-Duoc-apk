@@ -43,15 +43,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.runtime.remember
 
-// Rojo de error con buen contraste sobre fondo claro y su versión clara para el fondo verde
+// Rojo de error: normal para fondo claro y más claro para el fondo verde
 private val RojoError = Color(0xFFB3261E)
 private val RojoErrorClaro = Color(0xFFFFB4AB)
 
-/**
- * Colores comunes de los campos. Fondo blanco siempre; el borde se pone dorado/verde
- * al escribir y rojo si hay error. fondoOscuro = true para el login (fondo verde).
- */
+/** Colores de los campos. fondoOscuro = true para el login (fondo verde). */
 @Composable
 private fun coloresCampo(fondoOscuro: Boolean): TextFieldColors {
     val rojoBorde = if (fondoOscuro) RojoErrorClaro else RojoError
@@ -76,7 +80,7 @@ private fun coloresCampo(fondoOscuro: Boolean): TextFieldColors {
     )
 }
 
-/** Etiqueta en negrita sobre el campo (se lee mejor que un texto gris dentro del campo). */
+/** Etiqueta en negrita sobre el campo. */
 @Composable
 private fun EtiquetaCampo(texto: String, fondoOscuro: Boolean) {
     Text(
@@ -88,16 +92,15 @@ private fun EtiquetaCampo(texto: String, fondoOscuro: Boolean) {
     )
 }
 
-/** Mensaje bajo el campo: el error si hay, o una ayuda (ej: reglas de la contraseña). */
+/** Texto bajo el campo: el error o una ayuda. */
 private fun textoDeApoyo(error: String?, ayuda: String?): (@Composable () -> Unit)? {
     val texto = error ?: ayuda ?: return null
     return { Text(texto, fontSize = 14.sp) }
 }
 
 /**
- * Campo de formulario reutilizable: etiqueta arriba, ícono a la izquierda y,
- * si hay error, borde rojo + ícono de alerta + mensaje debajo del campo.
- * Con esPassword = true agrega el ojo para mostrar/ocultar la contraseña.
+ * Campo de texto reutilizable con etiqueta, ícono y mensaje de error.
+ * Con esPassword = true agrega el ojo para ver la contraseña.
  */
 @Composable
 fun CampoFormulario(
@@ -119,7 +122,7 @@ fun CampoFormulario(
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
         EtiquetaCampo(etiqueta, fondoOscuro)
         OutlinedTextField(
             value = valor,
@@ -167,8 +170,29 @@ fun CampoFormulario(
         )
     }
 }
+/** MensajeFormulario con animación. Si texto es null, se oculta. */
+@Composable
+fun MensajeFormularioAnimado(
+    texto: String?,
+    esError: Boolean,
+    modifier: Modifier = Modifier,
+    fondoOscuro: Boolean = false
+) {
+    // Guarda el último texto para que no desaparezca antes de la animación
+    var ultimoTexto by remember { mutableStateOf("") }
+    if (texto != null) ultimoTexto = texto
 
-/** Lista desplegable con el mismo estilo que CampoFormulario (ej: tipo de negocio). */
+    AnimatedVisibility(
+        visible = texto != null,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
+        modifier = modifier
+    ) {
+        MensajeFormulario(texto = ultimoTexto, esError = esError, fondoOscuro = fondoOscuro)
+    }
+}
+
+/** Lista desplegable con el mismo estilo de los campos. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectorFormulario(
@@ -183,7 +207,7 @@ fun SelectorFormulario(
 ) {
     var expandido by rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
         EtiquetaCampo(etiqueta, fondoOscuro = false)
         ExposedDropdownMenuBox(
             expanded = expandido,
@@ -227,10 +251,7 @@ fun SelectorFormulario(
     }
 }
 
-/**
- * Mensaje general del formulario (no de un campo), con ícono:
- * rojo con alerta si es error, verde con check si salió bien.
- */
+/** Mensaje general del formulario: rojo si es error, verde si salió bien. */
 @Composable
 fun MensajeFormulario(
     texto: String,

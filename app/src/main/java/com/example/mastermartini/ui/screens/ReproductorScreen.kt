@@ -45,26 +45,19 @@ import com.example.mastermartini.ui.components.FilaCategorias
 import com.example.mastermartini.ui.components.TextoSecundario
 import com.example.mastermartini.viewmodel.ReproductorViewModel
 
-/**
- * VIEW: reproducción de un video.
- *
- * Contrato con la navegación:
- *  - videoId: qué video mostrar (llega desde la ruta "reproductor/{videoId}")
- *  - onVolver: qué hacer al apretar "Volver" (lo decide el NavHost)
- */
+/** Pantalla del reproductor de video. */
 @Composable
 fun ReproductorScreen(
     videoId: Int,
     onVolver: () -> Unit,
     viewModel: ReproductorViewModel = viewModel()
 ) {
-    // 1) Cuando llega un videoId, le pedimos al ViewModel que lo cargue
+    // Carga el video al entrar
     LaunchedEffect(videoId) {
         viewModel.cargarVideo(videoId)
     }
 
-    // 2) Si la app pasa a segundo plano (botón Home, llamada...), pausamos el video.
-    //    Al girar el celular también llega ON_STOP: ahí NO pausamos.
+    // Pausa el video si la app pasa a segundo plano (pero no al girar)
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = LocalActivity.current
     DisposableEffect(lifecycleOwner) {
@@ -76,7 +69,7 @@ fun ReproductorScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // 3) Al salir: escondemos el video ANTES de navegar (si no, queda "flotando")
+    // Al salir, ocultamos el video antes de navegar para que no quede flotando
     var saliendo by remember { mutableStateOf(false) }
     val salir: () -> Unit = salir@{
         if (saliendo) return@salir // doble toque en "Volver": solo sale una vez
@@ -103,7 +96,7 @@ fun ReproductorScreen(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 4) Zona del video (16:9, fondo negro)
+            // Zona del video
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,7 +105,7 @@ fun ReproductorScreen(
                 contentAlignment = Alignment.Center
             ) {
                 when {
-                    // a) Hubo un error
+                    // Error
                     mensajeError != null -> Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -131,7 +124,7 @@ fun ReproductorScreen(
                         }
                     }
 
-                    // b) Video de YouTube: se abre en la app de YouTube
+                    // YouTube: se abre fuera de la app
                     fuente is FuenteVideo.YouTube -> Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -142,10 +135,10 @@ fun ReproductorScreen(
                         }
                     }
 
-                    // c) Video local o streaming: lo reproduce ExoPlayer
+                    // Local o streaming: lo reproduce ExoPlayer
                     else -> {
                         if (!saliendo) {
-                            // PlayerView es una vista "antigua" (no Compose); AndroidView es el puente
+                            // PlayerView no es de Compose, por eso va dentro de AndroidView
                             AndroidView(
                                 factory = { context ->
                                     PlayerView(context).apply {
@@ -163,7 +156,7 @@ fun ReproductorScreen(
                 }
             }
 
-            // 5) Guardar / quitar de "Mis videos guardados"
+            // Botón guardar
             if (video != null) {
                 BotonGuardarGrande(
                     guardado = viewModel.guardado,
@@ -171,7 +164,7 @@ fun ReproductorScreen(
                 )
             }
 
-            // 6) Información del video
+            // Información del video
             if (video != null) {
                 FilaCategorias(video.categorias)
                 TextoSecundario("Duración: ${video.duracion}")
@@ -181,7 +174,7 @@ fun ReproductorScreen(
                 )
             }
 
-            // 7) Botón grande y con buen contraste (usuarios mayores, como pide el caso)
+            // Botón grande para volver (pensado en adultos mayores)
             Button(
                 onClick = salir,
                 colors = ButtonDefaults.buttonColors(

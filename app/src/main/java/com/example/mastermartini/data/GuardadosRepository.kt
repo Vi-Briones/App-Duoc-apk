@@ -4,27 +4,18 @@ import androidx.compose.runtime.mutableStateListOf
 import com.example.mastermartini.model.Video
 
 /**
- * VIDEOS GUARDADOS por el usuario.
- *
- * Es un "object" (una sola instancia para toda la app) porque tres pantallas
- * necesitan ver la MISMA lista: Videos, Reproductor y Perfil.
- * Si guardas un video en el reproductor, el perfil lo muestra al instante.
- *
- * Se guarda solo en memoria: al cerrar la app la lista se vacía
- * (esta entrega no usa base de datos). A futuro se cambiaría por Room o DataStore,
- * y solo cambiaría este archivo.
- *
- * mutableStateListOf: una lista que Compose "observa". Cuando cambia,
- * las pantallas que la leen se redibujan solas.
+ * Videos guardados por el usuario.
+ * Es un object para que Videos, Reproductor y Perfil compartan la misma lista.
+ * Por ahora está en memoria, así que se borra al cerrar la app.
  */
 object GuardadosRepository {
 
-    // Guardamos solo los ids; el video completo se busca en VideoRepository
+    // Solo guardamos los ids de los videos
     private val idsGuardados = mutableStateListOf<Int>()
 
     fun estaGuardado(videoId: Int): Boolean = videoId in idsGuardados
 
-    /** Si está guardado lo quita; si no, lo agrega al principio (el más reciente primero). */
+    /** Si ya está guardado lo quita; si no, lo agrega al inicio. */
     fun alternar(videoId: Int) {
         if (videoId in idsGuardados) {
             idsGuardados.remove(videoId)
@@ -33,7 +24,7 @@ object GuardadosRepository {
         }
     }
 
-    /** Quita un video de la lista (si no estaba, no pasa nada). */
+    /** Quita un video de la lista. */
     fun quitar(videoId: Int) {
         idsGuardados.remove(videoId)
     }

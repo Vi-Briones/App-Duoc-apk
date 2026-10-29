@@ -18,7 +18,7 @@ import com.example.mastermartini.ui.screens.ReproductorScreen
 import com.example.mastermartini.ui.screens.VideosScreen
 import com.example.mastermartini.viewmodel.AuthViewModel
 
-/** Nombres de las rutas en un solo lugar, para no escribir textos sueltos (y equivocarse). */
+/** Rutas de la app en un solo lugar. */
 object Rutas {
     const val LOGIN = "login"
     const val REGISTRO = "registro"
@@ -30,10 +30,7 @@ object Rutas {
     fun reproductor(videoId: Int) = "reproductor/$videoId"
 }
 
-/**
- * El NavHost decide qué pantalla se muestra.
- * Las pantallas NO conocen al navController: solo reciben lambdas (onLogin, onVolver...).
- */
+/** Navegación de la app. Las pantallas no usan el navController, solo reciben lambdas. */
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -54,8 +51,7 @@ fun AppNavigation() {
                 viewModel = authViewModel,
                 onLogin = {
                     navController.navigate(Rutas.MENU) {
-                        // ← CAMBIO v6: borra TODO el historial
-                        // (ni el login ni un perfil "sin sesión" quedan atrás)
+                        // Borra el historial para que "atrás" no vuelva al login
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
@@ -74,8 +70,7 @@ fun AppNavigation() {
         composable(Rutas.REGISTRO) {
             RegistroScreen(
                 viewModel = authViewModel,
-                // ← CAMBIO v6: después de registrarse va al login
-                // (funciona tanto desde el inicio como desde el perfil)
+                // Después de registrarse vuelve al login
                 onRegistrado = {
                     navController.navigate(Rutas.LOGIN) {
                         popUpTo(Rutas.REGISTRO) { inclusive = true }
@@ -88,12 +83,12 @@ fun AppNavigation() {
         composable(Rutas.RECUPERAR_CLAVE) {
             RecuperarPasswordScreen(
                 viewModel = authViewModel,
-                // Vuelve justo al login (un doble toque no deja la pantalla en blanco)
+                // Vuelve al login (evita la pantalla en blanco con doble toque)
                 onVolver = { navController.popBackStack(Rutas.LOGIN, inclusive = false) }
             )
         }
 
-        // launchSingleTop: un doble toque no abre la misma pantalla dos veces
+        // launchSingleTop evita abrir la misma pantalla dos veces
         composable(Rutas.MENU) {
             MenuScreen(
                 onVideos = { navController.navigate(Rutas.VIDEOS) { launchSingleTop = true } },
@@ -124,8 +119,7 @@ fun AppNavigation() {
                 onVideoClick = { id -> navController.navigate(Rutas.reproductor(id)) { launchSingleTop = true } },
                 onIrAVideos = { navController.navigate(Rutas.VIDEOS) { launchSingleTop = true } },
                 onVolverMenu = { navController.popBackStack(Rutas.MENU, inclusive = false) },
-                // ← CAMBIO v6: ya no hay onCerrarSesion (el perfil cierra la sesión solo
-                // y se queda en modo "sin sesión"); ahora tiene estas dos acciones:
+                // Botones del perfil cuando no hay sesión
                 onIniciarSesion = { navController.navigate(Rutas.LOGIN) { launchSingleTop = true } },
                 onRegistrarse = {
                     authViewModel.limpiarRegistro()

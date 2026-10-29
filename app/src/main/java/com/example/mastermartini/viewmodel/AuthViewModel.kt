@@ -12,11 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
- * VIEWMODEL de Login, Registro y Recuperar clave.
- *
- * Las pantallas solo muestran el estado y avisan lo que escribe el usuario;
- * la validación (ValidadorFormularios) y la llamada al repositorio ocurren aquí.
- * Como el ViewModel sobrevive al giro del celular, lo escrito no se pierde.
+ * ViewModel de Login, Registro y Recuperar clave.
+ * Aquí se validan los formularios y se llama al repositorio.
  */
 class AuthViewModel : ViewModel() {
     private val repository = AuthRepository()
@@ -28,7 +25,7 @@ class AuthViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // true = la pantalla debe navegar; luego llama a loginNavegado()/registroNavegado()
+    // Cuando es true, la pantalla navega
     private val _loginSuccess = MutableStateFlow(false)
     val loginSuccess: StateFlow<Boolean> = _loginSuccess
 
@@ -44,8 +41,7 @@ class AuthViewModel : ViewModel() {
     var recuperar by mutableStateOf(RecuperarFormState())
         private set
 
-    // Los errores aparecen al apretar el botón. Después, si el campo tenía error,
-    // se vuelve a validar mientras escribe: así el mensaje se va apenas lo corrige.
+    // Los errores salen al apretar el botón y se quitan al corregir el campo
 
     // ----- Login -----
     fun onLoginCorreoChange(valor: String) {
@@ -86,7 +82,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    /** La pantalla ya navegó al menú: se limpia para que al volver al login no entre solo. */
+    /** Limpia el login después de entrar, para que no entre solo la próxima vez. */
     fun loginNavegado() {
         _loginSuccess.value = false
         login = LoginFormState()
@@ -173,7 +169,7 @@ class AuthViewModel : ViewModel() {
             )
             _isLoading.value = false
             if (ok) {
-                // Deja el correo escrito en el login para que solo ponga la clave
+                // Deja el correo listo en el login
                 login = LoginFormState(correo = form.correo.trim())
                 _registerSuccess.value = true
             } else {
@@ -187,7 +183,7 @@ class AuthViewModel : ViewModel() {
         registro = RegistroFormState()
     }
 
-    /** Se llama al entrar a Registro: parte con el formulario vacío. */
+    /** Deja el registro vacío al entrar. */
     fun limpiarRegistro() {
         registro = RegistroFormState()
     }

@@ -34,13 +34,7 @@ import com.example.mastermartini.ui.components.EncabezadoVerde
 import com.example.mastermartini.ui.components.TarjetaVideo
 import com.example.mastermartini.viewmodel.VideosViewModel
 
-/**
- * VIEW: lista de videos con buscador y botón "guardar" en cada tarjeta.
- *
- * Contrato con la navegación:
- *  - onVideoClick(id): abrir el reproductor
- *  - onVolverMenu: volver al menú principal
- */
+/** Lista de videos con buscador. */
 @Composable
 fun VideosScreen(
     onVideoClick: (Int) -> Unit,

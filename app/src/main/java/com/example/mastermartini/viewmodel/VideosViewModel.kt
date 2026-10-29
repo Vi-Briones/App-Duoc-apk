@@ -9,10 +9,7 @@ import com.example.mastermartini.data.VideoRepository
 import com.example.mastermartini.model.Video
 import java.text.Normalizer
 
-/**
- * VIEWMODEL de la lista de videos: guarda lo que el usuario busca,
- * decide qué videos se muestran y maneja el botón "guardar".
- */
+/** ViewModel de la lista de videos: búsqueda y guardados. */
 class VideosViewModel : ViewModel() {
 
     private val todos: List<Video> = VideoRepository.obtenerVideos()

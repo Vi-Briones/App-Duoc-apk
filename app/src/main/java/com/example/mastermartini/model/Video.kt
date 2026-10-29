@@ -3,10 +3,8 @@ package com.example.mastermartini.model
 import androidx.annotation.DrawableRes
 
 /**
- * MODEL: un video técnico de la app.
- *
- * miniatura es opcional: si es null, la tarjeta muestra un fondo verde de la marca.
- * Para usar una foto real, pon la imagen en res/drawable y escribe R.drawable.<nombre>.
+ * Un video de la app.
+ * Si miniatura es null, la tarjeta muestra un fondo verde.
  */
 data class Video(
     val id: Int,

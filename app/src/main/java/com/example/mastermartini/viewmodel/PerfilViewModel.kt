@@ -9,25 +9,19 @@ import com.example.mastermartini.data.GuardadosRepository
 import com.example.mastermartini.data.UsuarioSesion
 import com.example.mastermartini.model.Video
 
-/**
- * VIEWMODEL del perfil.
- *
- * Tiene dos estados:
- *  - usuario != null  -> sesión iniciada: muestra nombre, correo, teléfono y guardados
- *  - usuario == null  -> sin sesión: la pantalla ofrece "Iniciar sesión" y "Crear cuenta"
- */
+/** ViewModel del perfil. Si usuario es null, no hay sesión. */
 class PerfilViewModel : ViewModel() {
 
     private val authRepository = AuthRepository()
 
-    // Es un estado: cuando cambia (al cerrar sesión), la pantalla se redibuja sola
+    // Al cambiar (por ejemplo al cerrar sesión), la pantalla se actualiza
     var usuario by mutableStateOf<UsuarioSesion?>(authRepository.obtenerUsuarioActual())
         private set
 
     val haySesion: Boolean
         get() = usuario != null
 
-    /** "Luisana Nayarit Rivero" -> "LN" (para el círculo del avatar). */
+    /** Iniciales para el avatar, por ejemplo "Luisana Rivero" -> "LR". */
     val iniciales: String
         get() = (usuario?.nombre ?: "")
             .split(" ")
@@ -45,7 +39,7 @@ class PerfilViewModel : ViewModel() {
         GuardadosRepository.quitar(videoId)
     }
 
-    /** Cierra la sesión, borra los guardados y deja el perfil en modo "sin sesión". */
+    /** Cierra la sesión y borra los videos guardados. */
     fun cerrarSesion() {
         authRepository.cerrarSesion()
         GuardadosRepository.limpiar()

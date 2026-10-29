@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mastermartini.ui.components.CampoFormulario
 import com.example.mastermartini.ui.components.MensajeFormulario
+import com.example.mastermartini.ui.components.MensajeFormularioAnimado
 import com.example.mastermartini.viewmodel.AuthViewModel
 
 // Paleta de colores corporativa
@@ -44,7 +45,7 @@ fun LoginScreen(
     onIrARegistro: () -> Unit,
     onOlvidoPassword: () -> Unit
 ) {
-    // El estado del formulario vive en el ViewModel (sobrevive al giro de pantalla)
+    // El formulario está en el ViewModel, así no se borra al girar
     val form = viewModel.login
     val isLoading by viewModel.isLoading.collectAsState()
     val loginSuccess by viewModel.loginSuccess.collectAsState()
@@ -133,7 +134,7 @@ fun LoginScreen(
         }
 
         form.errorGeneral?.let {
-            MensajeFormulario(texto = it, esError = true, fondoOscuro = true)
+            MensajeFormularioAnimado(texto = it, esError = true, fondoOscuro = true)
         }
 
         Spacer(modifier = Modifier.height(24.dp))

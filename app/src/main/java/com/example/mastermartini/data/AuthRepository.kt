@@ -3,7 +3,7 @@ package com.example.mastermartini.data
 import android.util.Patterns
 import kotlinx.coroutines.delay
 
-/** Datos de la persona que inició sesión (lo que se muestra en el perfil). */
+/** Datos del usuario que se muestran en el perfil. */
 data class UsuarioSesion(
     val nombre: String,
     val correo: String,
@@ -14,7 +14,7 @@ data class UsuarioSesion(
 class AuthRepository {
 
     companion object {
-        // Cuenta de prueba inicial (se reemplaza cuando alguien se registra)
+        // Cuenta de prueba (se reemplaza al registrarse)
         private var currentName = "Usuario Master Martini"
         private var currentEmail = "usuario@mastermartini.cl"
         private var currentPhone = "+56 9 0000 0000"
@@ -57,13 +57,13 @@ class AuthRepository {
         return false
     }
 
-    /** Simula el envío del correo para restablecer la clave (no se envía nada real). */
+    /** Simula el envío del correo de recuperación (no envía nada). */
     suspend fun enviarRecuperacion(correo: String): Boolean {
         delay(1500)
         return true
     }
 
-    /** Datos de quien inició sesión, o null si nadie ha entrado. */
+    /** Usuario con sesión iniciada, o null si no hay sesión. */
     fun obtenerUsuarioActual(): UsuarioSesion? =
         if (sesionActiva) UsuarioSesion(currentName, currentEmail, currentPhone, currentBusiness) else null
 

@@ -50,17 +50,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mastermartini.R
 import com.example.mastermartini.model.Video
-
-/**
- * Colores de Master Martini usados en la app.
- * Están en un "object" propio para no chocar con el Color.kt del tema.
- */
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.getValue
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import androidx.compose.ui.platform.LocalContext
+/** Colores de Master Martini. */
 object ColoresMarca {
     val Verde = Color(0xFF004D42)
     val VerdeOscuro = Color(0xFF00302A)
     val Dorado = Color(0xFFC1A01D)
     val Cafe = Color(0xFF5B3A29)
-    val Fondo = Color(0xFFF6F4EF)          // crema suave: hace resaltar las tarjetas blancas
+    val Fondo = Color(0xFFF6F4EF)          // crema
     val Borde = Color(0xFFE3DFD6)
     val TextoPrincipal = Color(0xFF1C1B1B)
     val TextoSecundario = Color(0xFF5F6B69)
@@ -68,16 +72,13 @@ object ColoresMarca {
     val RojoItalia = Color(0xFFBD191F)
 }
 
-/**
- * Fuente Poppins para títulos (los archivos están en res/font).
- * El texto normal sigue con la fuente del sistema, que es la más fácil de leer.
- */
+/** Fuente Poppins para los títulos (res/font). */
 val Poppins = FontFamily(
     Font(R.font.poppins_medium, FontWeight.Medium),
     Font(R.font.poppins_bold, FontWeight.Bold)
 )
 
-/** Franja verde-blanco-rojo, como la que está bajo el logo de Master Martini. */
+/** Franja verde, blanco y rojo del logo. */
 @Composable
 fun FranjaItaliana(modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
@@ -92,7 +93,7 @@ fun FranjaItaliana(modifier: Modifier = Modifier) {
     }
 }
 
-/** Encabezado verde con bordes redondeados abajo, título en Poppins y franja italiana. */
+/** Encabezado verde con el título y la franja italiana. */
 @Composable
 fun EncabezadoVerde(
     titulo: String,
@@ -134,17 +135,14 @@ fun IconoPlay(modifier: Modifier = Modifier, tamano: Dp = 60.dp) {
     ) {
         Icon(
             imageVector = Icons.Filled.PlayArrow,
-            contentDescription = null, // decorativo: la tarjeta ya dice qué video es
+            contentDescription = null, // decorativo
             tint = ColoresMarca.TextoPrincipal,
             modifier = Modifier.size(tamano * 0.6f)
         )
     }
 }
 
-/**
- * Ícono de marcador (Material Icons).
- * Relleno = guardado. Solo el borde = no guardado.
- */
+/** Ícono de marcador: relleno si está guardado. */
 @Composable
 fun IconoMarcador(
     guardado: Boolean,
@@ -153,13 +151,13 @@ fun IconoMarcador(
 ) {
     Icon(
         imageVector = if (guardado) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-        contentDescription = null, // la descripción la pone el botón que lo contiene
+        contentDescription = null, // la pone el botón
         tint = color,
         modifier = modifier.size(26.dp)
     )
 }
 
-/** Botón pequeño con el marcador (para tarjetas). Área táctil de 48dp. */
+/** Botón de guardar pequeño, para las tarjetas. */
 @Composable
 fun BotonGuardar(
     guardado: Boolean,
@@ -167,8 +165,12 @@ fun BotonGuardar(
     modifier: Modifier = Modifier,
     color: Color = ColoresMarca.Verde
 ) {
+    val context = LocalContext.current
     IconButton(
-        onClick = onClick,
+        onClick = {
+            if (!guardado) vibrarCorto(context) // vibra solo al guardar, no al quitar
+            onClick()
+        },
         modifier = modifier.semantics {
             contentDescription = if (guardado) "Quitar de guardados" else "Guardar video"
         }
@@ -177,15 +179,27 @@ fun BotonGuardar(
     }
 }
 
-/** Botón grande con texto (para el reproductor): más claro para usuarios mayores. */
+/** Botón de guardar grande, para el reproductor. */
 @Composable
 fun BotonGuardarGrande(guardado: Boolean, onClick: () -> Unit) {
-    val colorContenido = if (guardado) Color.White else ColoresMarca.Verde
+    // El color cambia de a poco en vez de saltar
+    val colorFondo by animateColorAsState(
+        targetValue = if (guardado) ColoresMarca.Verde else ColoresMarca.Verde.copy(alpha = 0f),
+        label = "fondoGuardar"
+    )
+    val colorContenido by animateColorAsState(
+        targetValue = if (guardado) Color.White else ColoresMarca.Verde,
+        label = "contenidoGuardar"
+    )
+    val context = LocalContext.current
     OutlinedButton(
-        onClick = onClick,
+        onClick = {
+            if (!guardado) vibrarCorto(context) // vibra solo al guardar, no al quitar
+            onClick()
+        },
         border = BorderStroke(2.dp, ColoresMarca.Verde),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (guardado) ColoresMarca.Verde else Color.Transparent,
+            containerColor = colorFondo,
             contentColor = colorContenido
         ),
         modifier = Modifier
@@ -203,10 +217,7 @@ fun BotonGuardarGrande(guardado: Boolean, onClick: () -> Unit) {
     }
 }
 
-/**
- * Etiqueta de categoría. Alterna dorado y café como en el mockup,
- * pero con colores de texto que se leen bien (accesibilidad).
- */
+/** Etiqueta de categoría, alterna dorado y café. */
 @Composable
 fun ChipCategoria(texto: String, indice: Int) {
     val fondo = if (indice % 2 == 0) ColoresMarca.Dorado else ColoresMarca.Cafe
@@ -232,7 +243,7 @@ fun FilaCategorias(categorias: List<String>) {
     }
 }
 
-/** Miniatura 16:9 con degradado verde (o foto), botón de play y la duración en una esquina. */
+/** Miniatura del video con el botón de play y la duración. */
 @Composable
 fun MiniaturaVideo(
     video: Video,
@@ -257,7 +268,7 @@ fun MiniaturaVideo(
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Sin foto: la categoría sobre el degradado de la marca
+            // Sin foto: muestra la categoría
             Text(
                 text = video.categorias.firstOrNull() ?: "Video",
                 color = ColoresMarca.Dorado,
@@ -272,7 +283,7 @@ fun MiniaturaVideo(
 
         IconoPlay(tamano = tamanoPlay)
 
-        // Duración estilo YouTube (abajo a la derecha)
+        // Duración abajo a la derecha
         Text(
             text = video.duracion,
             color = Color.White,
@@ -288,7 +299,7 @@ fun MiniaturaVideo(
     }
 }
 
-/** Tarjeta de la lista: miniatura arriba; título, botón guardar y categorías abajo. */
+/** Tarjeta de un video en la lista. */
 @Composable
 fun TarjetaVideo(
     video: Video,
@@ -326,10 +337,7 @@ fun TarjetaVideo(
     }
 }
 
-/**
- * Tarjeta pequeña para "Mis videos guardados" del perfil.
- * Tocarla abre el video; el marcador lo quita de guardados.
- */
+/** Tarjeta pequeña para los videos guardados del perfil. */
 @Composable
 fun TarjetaGuardada(
     video: Video,
@@ -377,4 +385,19 @@ fun TextoSecundario(texto: String) {
         style = MaterialTheme.typography.bodyMedium,
         color = ColoresMarca.TextoSecundario
     )
+}
+/** Vibración corta para confirmar que el video se guardó. */
+fun vibrarCorto(context: Context) {
+    val vibrador = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrador.vibrate(VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrador.vibrate(80)
+    }
 }

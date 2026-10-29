@@ -47,15 +47,7 @@ import com.example.mastermartini.ui.components.ColoresMarca
 import com.example.mastermartini.ui.components.EncabezadoVerde
 import com.example.mastermartini.ui.components.Poppins
 
-/**
- * VIEW: Menú principal (basado en el mockup).
- *
- * Contrato con la navegación:
- *  - onVideos: ir a la lista de videos
- *  - onPerfil: ir al perfil
- *
- * Recetas, Cursos y Eventos aparecen como "Próximamente" (fuera del alcance de esta entrega).
- */
+/** Menú principal. Recetas, Cursos y Eventos quedan como "Próximamente". */
 @Composable
 fun MenuScreen(
     onVideos: () -> Unit,
@@ -148,7 +140,7 @@ private val destacados = listOf(
     Destacado("Qualità italiana", "Insumos de Master Martini", listOf(Color(0xFF8C7414), ColoresMarca.Dorado))
 )
 
-/** Carrusel deslizable de banners con puntitos indicadores. */
+/** Carrusel de banners con indicador de página. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CarruselDestacados() {
@@ -260,7 +252,7 @@ private fun AccesoMenu(
     }
 }
 
-/** Barra inferior con 3 pestañas (como el mockup). Estamos en "Inicio". */
+/** Barra inferior: Inicio, Videos y Perfil. */
 @Composable
 private fun BarraInferior(
     onVideos: () -> Unit,
@@ -275,7 +267,7 @@ private fun BarraInferior(
     )
     NavigationBar(
         containerColor = Color.White,
-        // Sin espacio extra abajo: MainActivity ya deja el margen de la barra del sistema
+        // Sin margen extra: ya lo pone MainActivity
         windowInsets = WindowInsets(0, 0, 0, 0)
     ) {
         NavigationBarItem(
