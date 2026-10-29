@@ -7,7 +7,8 @@ import kotlinx.coroutines.delay
 data class UsuarioSesion(
     val nombre: String,
     val correo: String,
-    val telefono: String
+    val telefono: String,
+    val tipoNegocio: String
 )
 
 class AuthRepository {
@@ -17,6 +18,7 @@ class AuthRepository {
         private var currentName = "Usuario Master Martini"
         private var currentEmail = "usuario@mastermartini.cl"
         private var currentPhone = "+56 9 0000 0000"
+        private var currentBusiness = "Pastelería"
         private var currentPass = "123456"
 
         // ¿Hay alguien con la sesión iniciada?
@@ -30,19 +32,24 @@ class AuthRepository {
         return ok
     }
 
-    /**
-     * OJO: el tercer parámetro se llama "rut" por compatibilidad con el código de
-     * RegistroScreen/AuthViewModel, pero lo que llega ahí es el TELÉFONO del formulario.
-     */
-    suspend fun register(name: String, email: String, rut: String, pass: String): Boolean {
+    suspend fun register(
+        nombre: String,
+        correo: String,
+        telefono: String,
+        tipoNegocio: String,
+        pass: String
+    ): Boolean {
         delay(1500)
 
-        if (name.isNotBlank() && email.isNotBlank() && rut.isNotBlank() && pass.isNotBlank()) {
+        if (nombre.isNotBlank() && correo.isNotBlank() && telefono.isNotBlank() &&
+            tipoNegocio.isNotBlank() && pass.isNotBlank()
+        ) {
             // Acepta cualquier correo válido (gmail, hotmail, duocuc, etc.)
-            if (Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-                currentName = name.trim()
-                currentEmail = email.trim()
-                currentPhone = rut.trim()   // ← es el teléfono
+            if (Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()) {
+                currentName = nombre.trim()
+                currentEmail = correo.trim()
+                currentPhone = telefono.trim()
+                currentBusiness = tipoNegocio
                 currentPass = pass
                 return true
             }
@@ -50,9 +57,15 @@ class AuthRepository {
         return false
     }
 
+    /** Simula el envío del correo para restablecer la clave (no se envía nada real). */
+    suspend fun enviarRecuperacion(correo: String): Boolean {
+        delay(1500)
+        return true
+    }
+
     /** Datos de quien inició sesión, o null si nadie ha entrado. */
     fun obtenerUsuarioActual(): UsuarioSesion? =
-        if (sesionActiva) UsuarioSesion(currentName, currentEmail, currentPhone) else null
+        if (sesionActiva) UsuarioSesion(currentName, currentEmail, currentPhone, currentBusiness) else null
 
     /** Se llama al apretar "Cerrar sesión". */
     fun cerrarSesion() {

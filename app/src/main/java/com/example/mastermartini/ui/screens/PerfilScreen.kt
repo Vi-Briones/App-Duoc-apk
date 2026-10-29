@@ -189,6 +189,7 @@ private fun ColumnScope.ContenidoConSesion(
     TarjetaBlanca {
         DatoPerfil("Correo", usuario.correo)
         DatoPerfil("Teléfono", usuario.telefono)
+        DatoPerfil("Tipo de negocio", usuario.tipoNegocio)
     }
 
     // Mis videos guardados

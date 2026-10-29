@@ -2,52 +2,53 @@ package com.example.mastermartini.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.mastermartini.ui.components.CampoFormulario
+import com.example.mastermartini.ui.components.MensajeFormulario
+import com.example.mastermartini.viewmodel.AuthViewModel
 
 // Paleta de colores corporativa
 private val DarkGreen = Color(0xFF003831)
 private val Gold = Color(0xFFD4A336)
 private val BackgroundGray = Color(0xFFF5F7F6)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecuperarPasswordScreen(
+    viewModel: AuthViewModel,
     onVolver: () -> Unit
 ) {
-    // AHORA USAN REMEMBERSAVEABLE
-    var correo by rememberSaveable { mutableStateOf("") }
-    var mensaje by rememberSaveable { mutableStateOf("") }
-    var isLoading by rememberSaveable { mutableStateOf(false) }
+    // El envío corre en el ViewModel: si se gira el celular mientras envía, no queda trabado
+    val form = viewModel.recuperar
+    val isLoading by viewModel.isLoading.collectAsState()
+    val focusManager = LocalFocusManager.current
 
-    val scope = rememberCoroutineScope()
-
-    val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = Color.White,
-        unfocusedContainerColor = Color.White,
-        focusedBorderColor = DarkGreen,
-        unfocusedBorderColor = Color.LightGray,
-        cursorColor = DarkGreen,
-        focusedTextColor = Color.Black,
-        unfocusedTextColor = Color.Black
-    )
-
-    val blackTextStyle = TextStyle(color = Color.Black, fontSize = 16.sp)
+    val enviar = {
+        focusManager.clearFocus()
+        viewModel.enviarRecuperacion()
+    }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(BackgroundGray)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundGray)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
     ) {
         // Cabezal Verde
         Column(
@@ -81,50 +82,29 @@ fun RecuperarPasswordScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            Text(
-                text = "Correo Electrónico",
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 4.dp).align(Alignment.Start)
+            CampoFormulario(
+                valor = form.correo,
+                onValorChange = viewModel::onRecuperarCorreoChange,
+                etiqueta = "Correo electrónico",
+                icono = Icons.Filled.Email,
+                error = form.errorCorreo,
+                placeholder = "nombre@gmail.com",
+                tipoTeclado = KeyboardType.Email,
+                accionTeclado = ImeAction.Done,
+                onAccionTeclado = enviar,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            OutlinedTextField(
-                value = correo,
-                onValueChange = { correo = it; mensaje = "" },
-                textStyle = blackTextStyle,
-                colors = textFieldColors,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-            )
-
-            // Mostrar el mensaje de error o éxito
-            if (mensaje.isNotEmpty()) {
-                Text(
-                    text = mensaje,
-                    color = if (mensaje.contains("enviado")) DarkGreen else Color(0xFFCE2B37),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    textAlign = TextAlign.Center
-                )
+            if (form.enviado) {
+                MensajeFormulario(texto = "¡Enlace de recuperación enviado!", esError = false)
             }
 
             Button(
-                onClick = {
-                    if (correo.isBlank() || !correo.trim().lowercase().endsWith("@mastermartini.cl")) {
-                        mensaje = "Ingresa un correo válido de @mastermartini.cl"
-                    } else {
-                        scope.launch {
-                            isLoading = true
-                            delay(1500)
-                            isLoading = false
-                            mensaje = "¡Enlace de recuperación enviado con éxito!"
-                            correo = ""
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                onClick = enviar,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .height(50.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Gold),
                 enabled = !isLoading

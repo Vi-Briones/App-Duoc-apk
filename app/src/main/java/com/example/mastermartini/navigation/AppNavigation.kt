@@ -59,8 +59,15 @@ fun AppNavigation() {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
-                onIrARegistro = { navController.navigate(Rutas.REGISTRO) { launchSingleTop = true } },
-                onOlvidoPassword = { navController.navigate(Rutas.RECUPERAR_CLAVE) { launchSingleTop = true } }
+                // Cada formulario parte vacío al entrar
+                onIrARegistro = {
+                    authViewModel.limpiarRegistro()
+                    navController.navigate(Rutas.REGISTRO) { launchSingleTop = true }
+                },
+                onOlvidoPassword = {
+                    authViewModel.limpiarRecuperar()
+                    navController.navigate(Rutas.RECUPERAR_CLAVE) { launchSingleTop = true }
+                }
             )
         }
 
@@ -80,6 +87,7 @@ fun AppNavigation() {
 
         composable(Rutas.RECUPERAR_CLAVE) {
             RecuperarPasswordScreen(
+                viewModel = authViewModel,
                 // Vuelve justo al login (un doble toque no deja la pantalla en blanco)
                 onVolver = { navController.popBackStack(Rutas.LOGIN, inclusive = false) }
             )
@@ -119,7 +127,10 @@ fun AppNavigation() {
                 // ← CAMBIO v6: ya no hay onCerrarSesion (el perfil cierra la sesión solo
                 // y se queda en modo "sin sesión"); ahora tiene estas dos acciones:
                 onIniciarSesion = { navController.navigate(Rutas.LOGIN) { launchSingleTop = true } },
-                onRegistrarse = { navController.navigate(Rutas.REGISTRO) { launchSingleTop = true } }
+                onRegistrarse = {
+                    authViewModel.limpiarRegistro()
+                    navController.navigate(Rutas.REGISTRO) { launchSingleTop = true }
+                }
             )
         }
     }
